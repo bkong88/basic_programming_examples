@@ -85,7 +85,7 @@ class Adventurer(Creature):
     def update_stats(self):
         self.armor = 5
         self.damage = 10
-        for item in self.inventory:
+        for name, value, attributes in self.inventory:
             """
                 TODO:
                     If the key "armor" is in the item attributes,
@@ -95,7 +95,13 @@ class Adventurer(Creature):
                     we should add the value to the Adventurer's
                     damage property
             """
-            continue # TODO: remove this and see above!
+            item = Item(name, value, attributes) #attributes should be a Dictionary of {attributes: value}, should change this to reflect that
+            if item.attributes == "damage":
+            	self.damage += item.value
+            elif item.attributes == "armor":
+            	self.armor += item.value
+        print("You now have : " + str(self.armor) + " armor.\n" + "You now have : " + str(self.damage) + " damage.")
+            #continue # TODO: remove this and see above!
 
     def print_inventory(self):
         print('The adventurer is currently carrying:')
