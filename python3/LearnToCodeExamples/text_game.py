@@ -1,5 +1,4 @@
 def main():
-    #test
     adventurer = Adventurer()
     boar = Boar()
     battle(adventurer, boar)
@@ -40,7 +39,7 @@ def battle(player, opponent):
         exit(0)
 
 
-class Creature:
+class Creature():
 
     def __init__(self, health, armor, damage):
         self.health = health
@@ -71,7 +70,8 @@ class Adventurer(Creature):
          TODO: When we try to print an Adventurer object, we should
          see the text "Noble Adventurer"
         """
-        pass # TODO: Remove this line and see above!
+        # pass # TODO: Remove this line and see above!
+        return("Noble Adventurer")
 
     def loot(self, dead_creature):
         # Add the dead creature's loot to the adventurer's inventory
