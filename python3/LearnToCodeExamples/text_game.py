@@ -1,4 +1,5 @@
 def main():
+    #test
     adventurer = Adventurer()
     boar = Boar()
     battle(adventurer, boar)
