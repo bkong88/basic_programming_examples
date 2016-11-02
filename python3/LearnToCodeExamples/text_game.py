@@ -96,6 +96,7 @@ class Adventurer(Creature):
                     damage property
             """
             item = Item(name, value, attributes) #attributes should be a Dictionary of {attributes: value}, should change this to reflect that
+            # try doing attributes.get("armor") != None, which returns True, then self.damage += attributes.get("armor")
             if item.attributes == "damage":
             	self.damage += item.value
             elif item.attributes == "armor":
