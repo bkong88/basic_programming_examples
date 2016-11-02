@@ -28,6 +28,12 @@ def battle(player, opponent):
                 If the command isn't one of these, tell the user that
                 the command is invalid and that they should try again.
             """
+            if action == "attack":
+            	player.attack(opponent)
+            elif action == "check_inventory":
+            	player.print_inventory()
+            elif action == "check_health":
+            	player.print_health()
             # TODO: See above!
         opponent.attack(player)
     if opponent.health <= 0:
@@ -57,7 +63,10 @@ class Creature():
             Call the target's take_damage method, giving it this
             creature's damage as a parameter
         """
-        pass # TODO: Remove this and see above!
+        print("%s is attacking %s." %(self, target))
+        target.take_damage(self.damage)
+        print("%s now has %s HP remaining." %(target, target.health))
+        # pass # TODO: Remove this and see above!
 
 
 class Adventurer(Creature):
