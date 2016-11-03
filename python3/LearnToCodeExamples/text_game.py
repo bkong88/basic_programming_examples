@@ -7,7 +7,6 @@ def main():
     battle(adventurer, dragon)
     print('You win!')
 
-
 def battle(player, opponent):
     print("You're battling a", opponent)
     while player.health > 0 and opponent.health > 0:
@@ -31,7 +30,6 @@ def battle(player, opponent):
         player.loot(opponent)
         print('Congratulations! You slayed %s.' % (opponent))
     if player.health <= 0:
-        # TODO: Print to the screen that the player died
         replay = input("%s has died! Would you like to play again? (y/n)\n" % (player))
         while replay != "y" and replay != "n":
             replay = input("Please input 'y' or 'n'\n")
@@ -54,6 +52,8 @@ class Creature():
         calculated_damage = damage - self.armor
         print(self, 'lost', calculated_damage, 'health points in damage. - ', end="")
         self.health -= calculated_damage
+        if self.health < 0:
+        	self.health = 0
 
     def attack(self, target):
         print("%s attacks %s! - " % (self, target), end="")
@@ -71,22 +71,49 @@ class Adventurer(Creature):
         return self.name
 
     def loot(self, dead_creature):
-        # Add the dead creature's loot to the adventurer's inventory
-        """
-            TODO: For each item in the dead creature's loot, we should
-            print that the player looted the item and add it to
-            the inventory
-        """
-        for item in dead_creature.loot:
-            item_type = ""
-            item_value = 0
-            for key, value in item.attributes.items():
-                item_type = key
-                item_value = value
-            print("You find a %s, it increases your %s by %s!" % (item.name, item_type, item_value))
-            self.inventory.append((item.name, item.attributes))
+        while dead_creature.loot != []:
+	        for item in dead_creature.loot:
+	            for key, value in item.attributes.items():
+	                item_type = key
+	                item_value = value
+	            if decideLoot(self, item_type, item_value):
+	            	self.inventory.append((item.name, item.attributes))
+	            	del dead_creature.loot[0]
+	            elif not decideLoot(self, item_type, item_value):
+	            	print("Not picking up %s because it's garbage" % (item.name))
+	            	del dead_creature.loot[0]
+	            #print("You find a %s, it increases your %s by %s!" % (item.name, item_type, item_value))
+	            #self.inventory.append((item.name, item.attributes))
         self.update_stats()
-
+	
+	# returns True if value of new item is greater than
+	# old item
+	def decideLoot(self, item_type, item_value):
+			hasArmor = False
+			hasDamage = False
+			for name, attributes in self.inventory:
+				for key, value in attributes.items():
+					myItem_type = key
+					myItem_value = value
+				print("You have a : %s" % (name))
+				if myItem_type == "armor":
+					print("hasArmor became True")
+					hasArmor = True
+				elif myItem_type == "damage":
+					print("hasDamage became True")
+					hasDamage = True
+				if myItem_type != item_type:
+					print("Skipping this iteration because %s != %s" %(myItem_type, item_type))
+					continue
+				elif item_value > attributes[item_type]:
+					print("True because your item is weak")
+					return True
+			if (hasArmor is False and item_type == "armor") or (hasDamage is False and item_type == "damage"):
+				print("True because you don't have armor or damage item, but it exists in the loot")
+				return True
+			else:
+				return False
+	
     def update_stats(self):
         self.armor = 5
         self.damage = 10
