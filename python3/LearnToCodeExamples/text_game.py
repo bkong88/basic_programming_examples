@@ -5,6 +5,10 @@ def main():
 
     dragon = Dragon()
     battle(adventurer, dragon)
+    
+    demon = Demon()
+    battle(adventurer, demon)
+    
     print('You win!')
 
 def battle(player, opponent):
@@ -26,7 +30,6 @@ def battle(player, opponent):
                 player.print_health()
         opponent.attack(player)
     if opponent.health <= 0:
-        # TODO: The player should loot the opponent
         player.loot(opponent)
         print('Congratulations! You slayed %s.' % (opponent))
     if player.health <= 0:
@@ -76,47 +79,47 @@ class Adventurer(Creature):
 	            for key, value in item.attributes.items():
 	                item_type = key
 	                item_value = value
-	            if decideLoot(self, item_type, item_value):
+	            if self.decideLoot(item_type, item_value):
 	            	self.inventory.append((item.name, item.attributes))
 	            	del dead_creature.loot[0]
-	            elif not decideLoot(self, item_type, item_value):
+	            elif not self.decideLoot(item_type, item_value):
 	            	print("Not picking up %s because it's garbage" % (item.name))
 	            	del dead_creature.loot[0]
 	            #print("You find a %s, it increases your %s by %s!" % (item.name, item_type, item_value))
 	            #self.inventory.append((item.name, item.attributes))
         self.update_stats()
 	
-	# returns True if value of new item is greater than
-	# old item
-	def decideLoot(self, item_type, item_value):
-			hasArmor = False
-			hasDamage = False
-			for name, attributes in self.inventory:
-				for key, value in attributes.items():
-					myItem_type = key
-					myItem_value = value
-				print("You have a : %s" % (name))
-				if myItem_type == "armor":
-					print("hasArmor became True")
-					hasArmor = True
-				elif myItem_type == "damage":
-					print("hasDamage became True")
-					hasDamage = True
-				if myItem_type != item_type:
-					print("Skipping this iteration because %s != %s" %(myItem_type, item_type))
-					continue
-				elif item_value > attributes[item_type]:
-					print("True because your item is weak")
-					return True
-			if (hasArmor is False and item_type == "armor") or (hasDamage is False and item_type == "damage"):
-				print("True because you don't have armor or damage item, but it exists in the loot")
-				return True
-			else:
-				return False
+	# This function decides whether or not to loot the monster based on item's stats
+    def decideLoot(self, item_type, item_value):
+        hasArmor = False
+        hasDamage = False
+        for name, attributes in self.inventory:
+            for key, value in attributes.items():
+                myItem_type = key
+                myItem_value = value
+            # print("You have a : %s" % (name))
+            if myItem_type == "armor":
+                # print("hasArmor became True")
+                hasArmor = True
+            elif myItem_type == "damage":
+                # print("hasDamage became True")
+                hasDamage = True
+            if myItem_type != item_type:
+                # print("Skipping this iteration because %s != %s" %(myItem_type, item_type))
+                continue
+            elif item_value > attributes[item_type]:
+                # print("True because your item is weak")
+                return True
+        if (hasArmor is False and item_type == "armor") or (hasDamage is False and item_type == "damage"):
+            # print("True because you don't have armor or damage item, but it exists in the loot")
+            return True
+        else:
+            return False
 	
     def update_stats(self):
         self.armor = 5
         self.damage = 10
+        self.delete_items()
         for name, attributes in self.inventory:
             if attributes.get("armor") is not None:
                 self.armor += attributes.get("armor")
@@ -132,11 +135,50 @@ class Adventurer(Creature):
             for item in self.inventory:
                 print("\t", item)
 
+    # This function deletes items in the inventory that are weak, and only keeps the strongest ones.
+    def delete_items(self):
+        newInventory = list(self.inventory)
+        currentMaxAttributes = {"armor": 0}
+        currentMaxName = ""
+        for name, attributes in newInventory:
+            # print("Currently checking (%s, %s) - currentMaxName = %s" % (name, attributes, currentMaxName))
+            if attributes.get("armor") is not None and attributes.get("armor") > currentMaxAttributes.get("armor"):
+                try:
+                    # print("      from TRY: Deleting %s because it is weaker than %s" % (currentMaxName, name))
+                    self.inventory.remove((currentMaxName, currentMaxAttributes))
+                    currentMaxAttributes = attributes
+                    currentMaxName = name
+                except:
+                    # print("     didn't delete anything because couldn't do TRY")
+                    currentMaxAttributes = attributes
+                    currentMaxName = name
+            elif attributes.get("armor") is not None and attributes.get("armor") < currentMaxAttributes.get("armor"):
+                # print("     from ELIF: Deleting %s because it is weaker than %s" % (name, currentMaxName))
+                self.inventory.remove((name, attributes))
+
+        newInventory = list(self.inventory)
+        currentMaxAttributes = {"damage": 0}
+        currentMaxName = ""
+        for name, attributes in newInventory:
+            # print("Currently checking (%s, %s) - currentMaxName = %s" % (name, attributes,    currentMaxName))
+            if attributes.get("damage") is not None and attributes.get("damage") > currentMaxAttributes.get("damage"):
+                try:
+                    print("      from TRY: Deleting %s because it is weaker than %s" % (currentMaxName, name))
+                    self.inventory.remove((currentMaxName, currentMaxAttributes))
+                    currentMaxAttributes = attributes
+                    currentMaxName = name
+                except:
+                    print("     didn't delete anything because couldn't do TRY")
+                    currentMaxAttributes = attributes
+                    currentMaxName = name
+            elif attributes.get("damage") is not None and attributes.get("damage") < currentMaxAttributes.get("damage"):
+                print("     from ELIF: Deleting %s because it is weaker than %s" % (name, currentMaxName))
+                self.inventory.remove((name, attributes))
+
     def print_health(self):
         print('%s currently has %s health.' % (self.name, self.health))
 
 
-# TODO: A Monster should inherit from Creature
 class Monster(Creature):
     def __init__(self, health, armor, damage, loot):
         super(Monster, self).__init__(health, armor, damage)
@@ -168,18 +210,15 @@ class Boar(Monster):
         return 'Boar'
 
 
-"""
-    TODO: Extra goal!
-    Create a new monster called a Demon. It should inherit from Monster.
-    A Demon should have 80 health, 5 armor, and do 20 damage.
-    A Demon should carry one item as loot. This item should be called
-    the Heavenly Hammer of Hammertime and should provide 15 damage.
-    Make sure the player fights the Demon.
-    Can you adjust the player's stats such that it's possible to win
-    the game but not guaranteed?
-    (I haven't actually done the math. Seriously, is it possible?)
-"""
-
+class Demon(Monster):
+    def __init__(self):
+        heavenly_hammer_of_hammertime = Item("Heavenly Hammer of Hammertime", {
+            "damage": 15
+        })
+        super(Demon, self).__init__(80, 5, 20, [heavenly_hammer_of_hammertime])
+    
+    def __str__(self):
+        return "Demon"
 
 class Item():
     def __init__(self, name, attributes):
